@@ -1,0 +1,1 @@
+Versão do Python = 3.6.6
