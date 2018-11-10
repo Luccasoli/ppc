@@ -14,9 +14,10 @@ class Veiculo():
         self.origem = origem
         self.tipo = tipo
 
-    def atravessar(self, ja_atravessaram, qnt_total):
+    def atravessar(self, ja_atravessaram, qnt_total, ponte):
         sleep(self.tt)
         print('--- {} - {} atravessou! --- {}/{}\n'.format(self.tipo.upper(), self.id, ja_atravessaram+1, qnt_total))
+        ponte.atravessou(self.origem, self.tipo)
 
 
 class Carro(Veiculo):

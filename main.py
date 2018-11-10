@@ -4,10 +4,11 @@ from threading import Thread, Condition
 from random import randint
 from time import sleep
 
-N_CARROS = 100
-N_CAMINHOES = 2
+N_CARROS = 16
+N_CAMINHOES = 4
 TRAVESSIA_CARRO = 5
 TRAVESSIA_CAMINHAO = 8
+INTERVALO_CARROS = 2
 # Intervalo de geração de veículos
 TA = [2, 6]
 
@@ -75,8 +76,16 @@ def gera_veiculo(**kwargs):
             condition.notify_all()
 
         # FIM DA ZONA CRÍTICA
-    print('\n\nGERAÇÃO NA {} CONCLUÍDA!'.format(origem.upper()))
+    print('\n{} GERAÇÃO NA {} CONCLUÍDA!'.format(20*'-', origem.upper()))
 
+
+def atravessar_aux(**kwargs):
+    destino = kwargs['destino']
+    veiculo = kwargs['veiculo']
+    ponte = kwargs['ponte']
+
+    print("UM {} INICIOU A TRAVESSIA!".format(veiculo.tipo.upper()))
+    veiculo.atravessar(ponte.total(), N_CAMINHOES+N_CARROS, ponte)  # SLEEP
 
 def atravessa(**kwargs):
     fila = kwargs['fila']
@@ -101,21 +110,51 @@ def atravessa(**kwargs):
                 ponte_sync.notify_all()
                 return
 
-            with condition:
-                if fila.empty():
-                    condition.wait()
+            while(True):
+                with condition:
+                    while(not fila.empty()):
+                        veiculo = fila.get_nowait()
 
-                veiculo = fila.get_nowait()
+                        if veiculo.tipo == 'carro':
+                            threads.append(Thread(target=atravessar_aux, kwargs={
+                                'ponte': ponte,
+                                'veiculo': veiculo,
+                                'destino': destino
+                            }))
+                            threads[-1].start()
+                            sleep(INTERVALO_CARROS)
 
-            print("UM {} VAI ATRAVESSAR!".format(veiculo.tipo.upper()))
-            print('{} - {} - ATRAVESSANDO para {}'.format(veiculo.tipo, veiculo.id, destino))
-            veiculo.atravessar(ponte.total(), N_CAMINHOES+N_CARROS)  # SLEEP
-            # INCREMENTA NA PONTE
-            ponte.atravessou(veiculo.origem, veiculo.tipo)
+                        else: # Não pode veiculos em sequencia com caminhao
+                            threads.append(Thread(target=atravessar_aux, kwargs={
+                                'ponte': ponte,
+                                'veiculo': veiculo,
+                                'destino': destino
+                            }))
+                            threads[-1].start()
+                            break
 
+                try:
+                    for t in threads:
+                        t.join()
+                    if len(threads) > 1:
+                        print("Sequencia de {}/{}".format(len(threads), len(threads)))
+                except:
+                    pass
+                threads = []
+                break
+            
             ponte_sync.notify_all()
             ponte.ocupada = False
-        # sleep(1)
+
+        #     print("UM {} VAI ATRAVESSAR!".format(veiculo.tipo.upper()))
+        #     print('{} - {} - ATRAVESSANDO para {}'.format(veiculo.tipo, veiculo.id, destino))
+        #     veiculo.atravessar(ponte.total(), N_CAMINHOES+N_CARROS)  # SLEEP
+        #     # INCREMENTA NA PONTE
+        #     ponte.atravessou(veiculo.origem, veiculo.tipo)
+
+        #     ponte_sync.notify_all()
+        #     ponte.ocupada = False
+        # # sleep(1)
 
 
 def main():
