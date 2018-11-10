@@ -1,12 +1,14 @@
 from time import sleep
 
+
 class Veiculo():
     '''
         tt = Tempo para atravessar a ponte
         it = Intervalo de tempo entre o próximo veiculo de mesmo tipo
     '''
 
-    def __init__(self, tt, origem, tipo, it=0):
+    def __init__(self, id, tt, origem, tipo, it=0):
+        self.id = id
         self.tt = tt
         self.it = it
         self.origem = origem
@@ -16,14 +18,15 @@ class Veiculo():
         sleep(self.tt)
         print('Atravessei')
 
+
 class Carro(Veiculo):
-    def __init__(self, tt, origem, tipo, it=0):
-        super().__init__(tt, origem, tipo, it)
+    def __init__(self, id, tt, origem, tipo, it=0):
+        super().__init__(id, tt, origem, tipo, it)
 
 
 class Caminhao(Veiculo):
-    def __init__(self, tt, origem, tipo, it=0):
-        super().__init__(tt, origem, tipo, it)
+    def __init__(self, id,  tt, origem, tipo, it=0):
+        super().__init__(id, tt, origem, tipo, it)
 
 
 class Ponte:
@@ -32,6 +35,7 @@ class Ponte:
         self.carros_atravessaram_para_direita = 0
         self.caminhoes_atravessaram_para_direita = 0
         self.caminhoes_atravessaram_para_esquerda = 0
+        self.ocupada = False
 
     def atravessou(self, origem, tipo):
         if origem == 'esquerda':
@@ -45,7 +49,12 @@ class Ponte:
             else:
                 self.caminhoes_atravessaram_para_esquerda += 1
         else:
-            print('Origem incorreta!')         
+            print('Origem incorreta!')
+
+    def total_atravessou_para(self, destino):
+        if destino == 'esquerda':
+            return self.caminhoes_atravessaram_para_esquerda+self.carros_atravessaram_para_esquerda
+        return self.caminhoes_atravessaram_para_direita+self.carros_atravessaram_para_direita
 
     def total(self):
-        return self.caminhoes_atravessaram_para_direita+self.caminhoes_atravessaram_para_esquerda+self.carros_atravessaram_para_direita+self.carros_atravessaram_para_esquerda     
+        return self.caminhoes_atravessaram_para_direita+self.caminhoes_atravessaram_para_esquerda+self.carros_atravessaram_para_direita+self.carros_atravessaram_para_esquerda
