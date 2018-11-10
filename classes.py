@@ -14,9 +14,9 @@ class Veiculo():
         self.origem = origem
         self.tipo = tipo
 
-    def atravessar(self):
+    def atravessar(self, ja_atravessaram, qnt_total):
         sleep(self.tt)
-        print('Atravessei')
+        print('--- {} - {} atravessou! --- {}/{}\n'.format(self.tipo.upper(), self.id, ja_atravessaram+1, qnt_total))
 
 
 class Carro(Veiculo):
