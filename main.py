@@ -1,11 +1,11 @@
 from classes import Carro, Caminhao, Ponte
 from queue import Queue
-from threading import Thread, Condition
+from threading import Thread, Condition, Semaphore
 from random import randint
-from time import sleep
+from time import sleep, time
 
-N_CARROS = 16
-N_CAMINHOES = 4
+N_CARROS = 100
+N_CAMINHOES = 6
 TRAVESSIA_CARRO = 5
 TRAVESSIA_CAMINHAO = 8
 INTERVALO_CARROS = 2
@@ -27,65 +27,55 @@ def gera_veiculo(**kwargs):
             # GERA CARRO
             if randint(0, 1):
                 if carros_gerados < N_CARROS/2:
-
-                    carro = Carro('{}_{}'.format(
-                        carros_gerados+1, origem.upper()), TRAVESSIA_CARRO, origem, 'carro', 2)
+                    carro = Carro(carros_gerados+1,
+                                  TRAVESSIA_CARRO, origem, 'carro', 2)
                     fila.put_nowait(carro)
                     carros_gerados += 1
-                    print('Carro {} gerado na {}'.format(
-                        carros_gerados, origem.upper()))
-                    # print('Quantidade de carros na {}: {}\n'.format(
-                    #     origem, carros_gerados))
+                    # print('Carro {} gerado na {}'.format(carros_gerados, origem.upper()))
 
                 elif caminhoes_gerados < N_CAMINHOES/2:
-
-                    caminhao = Caminhao('{}_{}'.format(
-                        caminhoes_gerados+1, origem.upper()), TRAVESSIA_CAMINHAO, origem, 'caminhao')
+                    caminhao = Caminhao(caminhoes_gerados+1,
+                                        TRAVESSIA_CAMINHAO, origem, 'caminhao')
                     fila.put_nowait(caminhao)
                     caminhoes_gerados += 1
-                    print('Caminhão {} gerado na {}'.format(
-                        caminhoes_gerados, origem.upper()))
-                    # print('Quantidade de caminhões na {}: {}\n'.format(
-                    #     origem, caminhoes_gerados))
-
+                    # print('Caminhão {} gerado na {}'.format(caminhoes_gerados, origem.upper()))
 
             # GERA CAMINHÃO
             else:
                 if caminhoes_gerados < N_CAMINHOES/2:
-
-                    caminhao = Caminhao('{}_{}'.format(
-                        caminhoes_gerados+1, origem.upper()), TRAVESSIA_CAMINHAO, origem, 'caminhao')
+                    caminhao = Caminhao(caminhoes_gerados+1,
+                                        TRAVESSIA_CAMINHAO, origem, 'caminhao')
                     fila.put_nowait(caminhao)
                     caminhoes_gerados += 1
-                    print('Caminhão {} gerado na {}'.format(
-                        caminhoes_gerados, origem.upper()))
-                    # print('Quantidade de caminhões na {}: {}\n'.format(
-                    #     origem, caminhoes_gerados))
+                    # print('Caminhão {} gerado na {}'.format(caminhoes_gerados, origem.upper()))
                 elif carros_gerados < N_CARROS/2:
-
-                    carro = Carro('{}_{}'.format(
-                        carros_gerados+1, origem.upper()), TRAVESSIA_CARRO, origem, 'carro', 2)
+                    carro = Carro(carros_gerados+1,
+                                  TRAVESSIA_CARRO, origem, 'carro', 2)
                     fila.put_nowait(carro)
                     carros_gerados += 1
-                    print('Carro {} gerado na {}'.format(
-                        carros_gerados, origem.upper()))
-                    # print('Quantidade de carros na {}: {}\n'.format(
-                    #     origem, carros_gerados))
+                    # print('Carro {} gerado na {}'.format(carros_gerados, origem.upper()))
 
             # AVISA QUE EXISTE VEÍCULO NA FILA
             condition.notify_all()
 
         # FIM DA ZONA CRÍTICA
-    print('\n{} GERAÇÃO NA {} CONCLUÍDA!'.format(20*'-', origem.upper()))
+    # print('\n{} GERAÇÃO NA {} CONCLUÍDA!'.format(40*'-', origem.upper()))
 
 
 def atravessar_aux(**kwargs):
     destino = kwargs['destino']
     veiculo = kwargs['veiculo']
     ponte = kwargs['ponte']
+    semaforo = kwargs['semaforo']
 
-    print("UM {} INICIOU A TRAVESSIA!".format(veiculo.tipo.upper()))
-    veiculo.atravessar(ponte.total(), N_CAMINHOES+N_CARROS, ponte)  # SLEEP
+    seta = ' --> ' if destino == 'direita' else ' <-- '
+
+    print('{} {} - {} INICIOU A TRAVESSIA PELA {}!'.format(seta,
+                                                           veiculo.tipo.upper(), veiculo.id, veiculo.origem.upper()))
+    veiculo.atravessar()  # SLEEP
+    with semaforo:
+        ponte.atravessou(veiculo.origem, veiculo.tipo, N_CAMINHOES+N_CARROS)
+
 
 def atravessa(**kwargs):
     fila = kwargs['fila']
@@ -95,8 +85,11 @@ def atravessa(**kwargs):
     ponte = kwargs['ponte']
     ponte_sync = kwargs['ponte_sync']
     threads = []
+    veiculos = []
+    caminhao_aux = None
 
     while(True):
+        sleep(1)
         with ponte_sync:
             if ponte.ocupada:
                 print("*** PONTE OCUPADA ***")
@@ -110,52 +103,63 @@ def atravessa(**kwargs):
                 ponte_sync.notify_all()
                 return
 
-            while(True):
-                with condition:
-                    while(not fila.empty()):
-                        veiculo = fila.get_nowait()
+            with condition:
+                while(not fila.empty()):
+                    if caminhao_aux:
+                        veiculos.append(caminhao_aux)
+                        caminhao_aux = None
+                        break
 
-                        if veiculo.tipo == 'carro':
-                            threads.append(Thread(target=atravessar_aux, kwargs={
-                                'ponte': ponte,
-                                'veiculo': veiculo,
-                                'destino': destino
-                            }))
-                            threads[-1].start()
-                            sleep(INTERVALO_CARROS)
+                    v = fila.get_nowait()
 
-                        else: # Não pode veiculos em sequencia com caminhao
-                            threads.append(Thread(target=atravessar_aux, kwargs={
-                                'ponte': ponte,
-                                'veiculo': veiculo,
-                                'destino': destino
-                            }))
-                            threads[-1].start()
+                    if v.tipo == 'caminhao':
+                        if len(veiculos) == 0:
+                            veiculos.append(v)
                             break
 
-                try:
-                    for t in threads:
-                        t.join()
-                    if len(threads) > 1:
-                        print("Sequencia de {}/{}".format(len(threads), len(threads)))
-                except:
-                    pass
+                        # Se tem carros na ponte, guarda o caminhão para a próxima vez
+                        caminhao_aux = v
+                        print('tem carros')
+
+                        break
+                    veiculos.append(v)
+
+            if len(veiculos) > 1:
+                print("\nSequencia de {} carros vão atravessar para {}\n".format(
+                    len(veiculos), destino))
+            elif len(veiculos) == 1 and veiculos[-1].tipo == 'caminhao':
+                print('\nUm caminhão vai atravessar para {}'.format(destino))
+            elif len(veiculos) == 1 and veiculos[-1].tipo == 'carro':
+                print('\nUm carro vai atravessar para {}'.format(destino))
+
+            else:
+                ponte_sync.notify_all()
+                ponte.ocupada = False
+                veiculos = []
                 threads = []
-                break
-            
+
+                continue
+
+            semaforo = Semaphore()
+            for veiculo in veiculos:
+                threads.append(Thread(target=atravessar_aux, kwargs={
+                    'ponte': ponte,
+                    'veiculo': veiculo,
+                    'destino': destino,
+                    'semaforo': semaforo,
+                }))
+                threads[-1].start()
+                sleep(INTERVALO_CARROS)
+
+            for t in threads:
+                t.join()
+
+            threads = []
+            veiculos = []
+
             ponte_sync.notify_all()
             ponte.ocupada = False
-
-        #     print("UM {} VAI ATRAVESSAR!".format(veiculo.tipo.upper()))
-        #     print('{} - {} - ATRAVESSANDO para {}'.format(veiculo.tipo, veiculo.id, destino))
-        #     veiculo.atravessar(ponte.total(), N_CAMINHOES+N_CARROS)  # SLEEP
-        #     # INCREMENTA NA PONTE
-        #     ponte.atravessou(veiculo.origem, veiculo.tipo)
-
-        #     ponte_sync.notify_all()
-        #     ponte.ocupada = False
-        # # sleep(1)
-
+    
 
 def main():
     # Uma condição pra cada sentido de origem
@@ -180,13 +184,12 @@ def main():
                                                               'destino': 'direita',
                                                               'ponte_sync': ponte_sync,
                                                               'ponte': ponte})
-    travessia_para_esquerda = Thread(target=atravessa, kwargs=
-                                            {'fila': qr,
-                                            'condition': cond_na_direita,
-                                            'destino': 'esquerda',
-                                            'origem': 'direita',
-                                            'ponte_sync': ponte_sync,
-                                            'ponte': ponte})
+    travessia_para_esquerda = Thread(target=atravessa, kwargs={'fila': qr,
+                                                               'condition': cond_na_direita,
+                                                               'destino': 'esquerda',
+                                                               'origem': 'direita',
+                                                               'ponte_sync': ponte_sync,
+                                                               'ponte': ponte})
 
     gera_na_direita.start()
     gera_na_esquerda.start()
@@ -200,4 +203,6 @@ def main():
 
 
 if __name__ == '__main__':
+    start = time()
     main()
+    print("--- %s seconds ---" % (time() - start))

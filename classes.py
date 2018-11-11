@@ -14,10 +14,9 @@ class Veiculo():
         self.origem = origem
         self.tipo = tipo
 
-    def atravessar(self, ja_atravessaram, qnt_total, ponte):
+    def atravessar(self):
         sleep(self.tt)
-        print('--- {} - {} atravessou! --- {}/{}\n'.format(self.tipo.upper(), self.id, ja_atravessaram+1, qnt_total))
-        ponte.atravessou(self.origem, self.tipo)
+        print('--- {} - {} atravessou! --- \n'.format(self.tipo.upper(), self.id))
 
 
 class Carro(Veiculo):
@@ -38,7 +37,7 @@ class Ponte:
         self.caminhoes_atravessaram_para_esquerda = 0
         self.ocupada = False
 
-    def atravessou(self, origem, tipo):
+    def atravessou(self, origem, tipo, total):
         if origem == 'esquerda':
             if tipo == 'carro':
                 self.carros_atravessaram_para_direita += 1
@@ -51,6 +50,8 @@ class Ponte:
                 self.caminhoes_atravessaram_para_esquerda += 1
         else:
             print('Origem incorreta!')
+
+        print('Quantidade total que já passou pela ponte: {}/{}'.format(self.total(), total))
 
     def total_atravessou_para(self, destino):
         if destino == 'esquerda':
