@@ -7,7 +7,8 @@ class Veiculo():
         it = Intervalo de tempo entre o próximo veiculo de mesmo tipo
     '''
 
-    def __init__(self, id, tt, origem, tipo, it=0):
+    def __init__(self, id, tt, origem, tipo, data_criacao, it=0):
+        self.data_criacao = data_criacao
         self.id = id
         self.tt = tt
         self.it = it
@@ -20,13 +21,13 @@ class Veiculo():
 
 
 class Carro(Veiculo):
-    def __init__(self, id, tt, origem, tipo, it=0):
-        super().__init__(id, tt, origem, tipo, it)
+    def __init__(self, id, tt, origem, tipo, data_criacao, it=0):
+        super().__init__(id, tt, origem, tipo, data_criacao, it)
 
 
 class Caminhao(Veiculo):
-    def __init__(self, id,  tt, origem, tipo, it=0):
-        super().__init__(id, tt, origem, tipo, it)
+    def __init__(self, id,  tt, origem, tipo, data_criacao, it=0):
+        super().__init__(id, tt, origem, tipo, data_criacao, it)
 
 
 class Ponte:
