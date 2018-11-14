@@ -3,6 +3,8 @@ from queue import Queue
 from threading import Thread, Condition, Semaphore
 from random import randint
 from time import sleep, time
+from datetime import datetime
+
 
 N_CARROS = 100
 N_CAMINHOES = 6
@@ -138,6 +140,8 @@ def atravessa(**kwargs):
                 ponte.ocupada = False
                 veiculos = []
                 threads = []
+                if ponte.total_atravessou_para(destino) == (N_CAMINHOES+N_CARROS)/2-1 and caminhao_aux:
+                    veiculos.append(caminhao_aux)
 
                 continue
 
@@ -222,11 +226,13 @@ if __name__ == '__main__':
     start = time()
     main(tempos_de_espera=tempos_de_espera,
          tempo_uso_da_ponte=tempo_uso_da_ponte)
-    print("\n--- Tempo de execução: {} segundos ---".format((time() - start)))
-    print("--- Tempo máximo de espera: {} segundos ---".format(max(tempos_de_espera)))
-    print("--- Tempo mínimo de espera: {} segundos ---".format(min(tempos_de_espera)))
+    te = int(time() - start)
+    print("\n--- Tempo de execução: {} minutos e {} segundos ---".format(te/60, te%60))
+    print("--- Tempo máximo de espera: {} minutos e {} segundos ---".format(int(max(tempos_de_espera))/60, int(max(tempos_de_espera))%60))
+    print("--- Tempo mínimo de espera: {} minutos e {} segundos ---".format(int(min(tempos_de_espera))/60, int(min(tempos_de_espera))%60))
     soma = 0
     for tempo in tempos_de_espera:
         soma += tempo
-    print("--- Tempo médio de espera: {} segundos ---".format(soma/(N_CAMINHOES+N_CARROS)))
-    print("--- Tempo de uso da ponte: {} segundos ---".format(tempo_uso_da_ponte[0]))
+    tm = int(soma/(N_CAMINHOES+N_CARROS))
+    print("--- Tempo médio de espera: {} minutos e {} segundos ---".format(tm/60, tm%60))
+    print("--- Tempo de uso da ponte: {} minutos e {} segundos ---".format(int(tempo_uso_da_ponte[0])/60, int(tempo_uso_da_ponte[0])%60))
