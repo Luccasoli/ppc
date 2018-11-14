@@ -31,14 +31,12 @@ def gera_veiculo(**kwargs):
                                   TRAVESSIA_CARRO, origem, 'carro', time(), 2)
                     fila.put_nowait(carro)
                     carros_gerados += 1
-                    # print('Carro {} gerado na {}'.format(carros_gerados, origem.upper()))
 
                 elif caminhoes_gerados < N_CAMINHOES/2:
                     caminhao = Caminhao(caminhoes_gerados+1,
                                         TRAVESSIA_CAMINHAO, origem, 'caminhao', time())
                     fila.put_nowait(caminhao)
                     caminhoes_gerados += 1
-                    # print('Caminhão {} gerado na {}'.format(caminhoes_gerados, origem.upper()))
 
             # GERA CAMINHÃO
             else:
@@ -47,19 +45,16 @@ def gera_veiculo(**kwargs):
                                         TRAVESSIA_CAMINHAO, origem, 'caminhao', time())
                     fila.put_nowait(caminhao)
                     caminhoes_gerados += 1
-                    # print('Caminhão {} gerado na {}'.format(caminhoes_gerados, origem.upper()))
                 elif carros_gerados < N_CARROS/2:
                     carro = Carro(carros_gerados+1,
                                   TRAVESSIA_CARRO, origem, 'carro', time(), 2)
                     fila.put_nowait(carro)
                     carros_gerados += 1
-                    # print('Carro {} gerado na {}'.format(carros_gerados, origem.upper()))
 
             # AVISA QUE EXISTE VEÍCULO NA FILA
             condition.notify_all()
 
         # FIM DA ZONA CRÍTICA
-    # print('\n{} GERAÇÃO NA {} CONCLUÍDA!'.format(40*'-', origem.upper()))
 
 
 def atravessar_aux(**kwargs):
@@ -109,23 +104,26 @@ def atravessa(**kwargs):
 
             with condition:
                 while(not fila.empty()):
-                    if caminhao_aux:
-                        veiculos.append(caminhao_aux)
-                        caminhao_aux = None
-                        break
-
-                    v = fila.get_nowait()
-
-                    if v.tipo == 'caminhao':
-                        if len(veiculos) == 0:
-                            veiculos.append(v)
+                    if randint(0, 1):
+                        if caminhao_aux:
+                            veiculos.append(caminhao_aux)
+                            caminhao_aux = None
                             break
 
-                        # Se tem carros na ponte, guarda o caminhão para a próxima vez
-                        caminhao_aux = v
+                        v = fila.get_nowait()
 
+                        if v.tipo == 'caminhao':
+                            if len(veiculos) == 0:
+                                veiculos.append(v)
+                                break
+
+                            # Se tem carros na ponte, guarda o caminhão para a próxima vez
+                            caminhao_aux = v
+
+                            break
+                        veiculos.append(v)
+                    else:
                         break
-                    veiculos.append(v)
 
             if len(veiculos) > 1:
                 print("\nSequencia de {} carros vão atravessar para {}\n".format(
@@ -225,10 +223,10 @@ if __name__ == '__main__':
     main(tempos_de_espera=tempos_de_espera,
          tempo_uso_da_ponte=tempo_uso_da_ponte)
     print("\n--- Tempo de execução: {} segundos ---".format((time() - start)))
-    print("--- Tempo máximo: {} segundos ---".format(max(tempos_de_espera)))
-    print("--- Tempo mínimo: {} segundos ---".format(min(tempos_de_espera)))
+    print("--- Tempo máximo de espera: {} segundos ---".format(max(tempos_de_espera)))
+    print("--- Tempo mínimo de espera: {} segundos ---".format(min(tempos_de_espera)))
     soma = 0
     for tempo in tempos_de_espera:
         soma += tempo
-    print("--- Tempo médio: {} segundos ---".format(soma/(N_CAMINHOES+N_CARROS)))
+    print("--- Tempo médio de espera: {} segundos ---".format(soma/(N_CAMINHOES+N_CARROS)))
     print("--- Tempo de uso da ponte: {} segundos ---".format(tempo_uso_da_ponte[0]))
