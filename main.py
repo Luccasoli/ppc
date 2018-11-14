@@ -90,7 +90,7 @@ def atravessa(**kwargs):
     caminhao_aux = None
 
     while(True):
-        sleep(1)
+        sleep(0.1)
         with ponte_sync:
             if ponte.ocupada:
                 print("*** PONTE OCUPADA ***")
