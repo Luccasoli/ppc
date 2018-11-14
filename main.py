@@ -226,13 +226,11 @@ if __name__ == '__main__':
     start = time()
     main(tempos_de_espera=tempos_de_espera,
          tempo_uso_da_ponte=tempo_uso_da_ponte)
-    te = int(time() - start)
-    print("\n--- Tempo de execução: {} minutos e {} segundos ---".format(te/60, te%60))
-    print("--- Tempo máximo de espera: {} minutos e {} segundos ---".format(int(max(tempos_de_espera))/60, int(max(tempos_de_espera))%60))
-    print("--- Tempo mínimo de espera: {} minutos e {} segundos ---".format(int(min(tempos_de_espera))/60, int(min(tempos_de_espera))%60))
+    print("\n--- Tempo de execução: {} segundos ---".format((time() - start)))
+    print("--- Tempo máximo: {} segundos ---".format(max(tempos_de_espera)))
+    print("--- Tempo mínimo: {} segundos ---".format(min(tempos_de_espera)))
     soma = 0
     for tempo in tempos_de_espera:
         soma += tempo
-    tm = int(soma/(N_CAMINHOES+N_CARROS))
-    print("--- Tempo médio de espera: {} minutos e {} segundos ---".format(tm/60, tm%60))
-    print("--- Tempo de uso da ponte: {} minutos e {} segundos ---".format(int(tempo_uso_da_ponte[0])/60, int(tempo_uso_da_ponte[0])%60))
+    print("--- Tempo médio: {} segundos ---".format(soma/(N_CAMINHOES+N_CARROS)))
+    print("--- Tempo de uso da ponte: {} segundos ---".format(tempo_uso_da_ponte[0]))
