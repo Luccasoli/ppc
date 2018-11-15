@@ -93,7 +93,6 @@ def atravessa(**kwargs):
         sleep(0.1)
         with ponte_sync:
             if ponte.ocupada:
-                print("*** PONTE OCUPADA ***")
                 ponte_sync.wait()
 
             ponte.ocupada = True
@@ -106,7 +105,7 @@ def atravessa(**kwargs):
 
             with condition:
                 while(not fila.empty()):
-                    if randint(0, 1):
+                    if randint(0, 1) or randint(0, 1):
                         if caminhao_aux:
                             veiculos.append(caminhao_aux)
                             caminhao_aux = None
@@ -227,10 +226,10 @@ if __name__ == '__main__':
     main(tempos_de_espera=tempos_de_espera,
          tempo_uso_da_ponte=tempo_uso_da_ponte)
     print("\n--- Tempo de execução: {} segundos ---".format((time() - start)))
-    print("--- Tempo máximo: {} segundos ---".format(max(tempos_de_espera)))
-    print("--- Tempo mínimo: {} segundos ---".format(min(tempos_de_espera)))
+    print("--- Tempo máximo de espera na fila: {} segundos ---".format(max(tempos_de_espera)))
+    print("--- Tempo mínimo de espera na fila: {} segundos ---".format(min(tempos_de_espera)))
     soma = 0
     for tempo in tempos_de_espera:
         soma += tempo
-    print("--- Tempo médio: {} segundos ---".format(soma/(N_CAMINHOES+N_CARROS)))
+    print("--- Tempo médio de espera na fila: {} segundos ---".format(soma/(N_CAMINHOES+N_CARROS)))
     print("--- Tempo de uso da ponte: {} segundos ---".format(tempo_uso_da_ponte[0]))
