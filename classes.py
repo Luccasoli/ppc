@@ -3,31 +3,31 @@ from time import sleep
 
 class Veiculo():
     '''
-        tt = Tempo para atravessar a ponte
-        it = Intervalo de tempo entre o próximo veiculo de mesmo tipo
+        tempo_de_travessia = Tempo para atravessar a ponte
+        intervalo_entre_carros = Intervalo de tempo entre o próximo veiculo de mesmo tipo
     '''
 
-    def __init__(self, id, tt, origem, tipo, data_criacao, it=0):
+    def __init__(self, id, tempo_de_travessia, origem, tipo, data_criacao, intervalo_entre_carros=0):
         self.data_criacao = data_criacao
         self.id = id
-        self.tt = tt
-        self.it = it
+        self.tempo_de_travessia = tempo_de_travessia
+        self.intervalo_entre_carros = intervalo_entre_carros
         self.origem = origem
         self.tipo = tipo
 
     def atravessar(self):
-        sleep(self.tt)
+        sleep(self.tempo_de_travessia)
         print('--- {} - {} atravessou! --- \n'.format(self.tipo.upper(), self.id))
 
 
 class Carro(Veiculo):
-    def __init__(self, id, tt, origem, tipo, data_criacao, it=0):
-        super().__init__(id, tt, origem, tipo, data_criacao, it)
+    def __init__(self, id, tempo_de_travessia, origem, tipo, data_criacao, intervalo_entre_carros=0):
+        super().__init__(id, tempo_de_travessia, origem, tipo, data_criacao, intervalo_entre_carros)
 
 
 class Caminhao(Veiculo):
-    def __init__(self, id,  tt, origem, tipo, data_criacao, it=0):
-        super().__init__(id, tt, origem, tipo, data_criacao, it)
+    def __init__(self, id,  tempo_de_travessia, origem, tipo, data_criacao, intervalo_entre_carros=0):
+        super().__init__(id, tempo_de_travessia, origem, tipo, data_criacao, intervalo_entre_carros)
 
 
 class Ponte:
