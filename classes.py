@@ -37,6 +37,7 @@ class Ponte:
         self.caminhoes_atravessaram_para_direita = 0
         self.caminhoes_atravessaram_para_esquerda = 0
         self.ocupada = False
+        self.sentido = None
 
     def atravessou(self, origem, tipo, total):
         if origem == 'esquerda':
@@ -61,3 +62,7 @@ class Ponte:
 
     def total(self):
         return self.caminhoes_atravessaram_para_direita+self.caminhoes_atravessaram_para_esquerda+self.carros_atravessaram_para_direita+self.carros_atravessaram_para_esquerda
+
+class UltimoCaminhao:
+    def __init__(self, *args, **kwargs):
+        self.caminhao = None
