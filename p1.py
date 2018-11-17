@@ -30,9 +30,6 @@ def gera_veiculo(**kwargs):
                 fila.put_nowait(carro)
                 carros_gerados += 1
 
-            # AVISA QUE EXISTE VEÍCULO NA FILA
-            condition.notify_all()
-
         # FIM DA ZONA CRÍTICA
 
 

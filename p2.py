@@ -53,9 +53,6 @@ def gera_veiculo(**kwargs):
                     fila.put_nowait(carro)
                     carros_gerados += 1
 
-            # AVISA QUE EXISTE VEÍCULO NA FILA
-            condition.notify_all()
-
         # FIM DA ZONA CRÍTICA
 
 
@@ -94,7 +91,6 @@ def atravessa(**kwargs):
         while(not fila.empty() and carros_na_ponte < 5):
             if caminhao_aux.caminhao:
                 veiculos.append(caminhao_aux.caminhao)
-                print('Caminhao vai atravessar!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
                 caminhao_aux.caminhao = ''
                 break
 
@@ -107,8 +103,6 @@ def atravessa(**kwargs):
 
                 # Se tem carros na ponte, guarda o caminhão para a próxima vez
                 caminhao_aux.caminhao = v
-                print('**** {} ****'.format(caminhao_aux.caminhao))
-
                 break
             else:
                 carros_na_ponte += 1
@@ -118,8 +112,6 @@ def atravessa(**kwargs):
         # Se o último veículo é um caminhão
         if fila.empty() and caminhao_aux.caminhao and (not len(veiculos)):
             veiculos.append(caminhao_aux.caminhao)
-            print('ULTIMO Caminhao vai atravessar!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
-
             caminhao_aux.caminhao = ''
     
     if len(veiculos):
@@ -164,7 +156,8 @@ def main(**kwargs):
     tempos_de_espera = kwargs['tempos_de_espera']
     tempo_uso_da_ponte = kwargs['tempo_uso_da_ponte']
 
-    # Uma condição pra cada sentido de origem
+    # Condition usado para garantir a exclusão mútua ao acessar as filas de veículo em espera
+    # Uma Condition pra cada sentido de origem
     cond_na_esquerda = Condition()
     cond_na_direita = Condition()
     ponte_sync = Condition()
@@ -201,7 +194,6 @@ def main(**kwargs):
             ponte.sentido = None
         if lado == 0 or lado == 'esquerda':
             if ponte.total_atravessou_para('esquerda') < (N_CAMINHOES+N_CARROS)/2:
-                print('Esquerda {}'.format(ponte.total_atravessou_para('esquerda')))
                 travessia_para_esquerda = Thread(target=atravessa, kwargs={'fila': qr,
                                                                'tempo_uso_da_ponte': tempo_uso_da_ponte,
                                                                'tempos_de_espera': tempos_de_espera,
@@ -211,14 +203,12 @@ def main(**kwargs):
                                                                'ponte_sync': ponte_sync,
                                                                'ponte': ponte,
                                                                'caminhao_aux': caminhao_aux_na_direita,})
-                print('Esquerda {}'.format(caminhao_aux_na_direita.caminhao))
                 travessia_para_esquerda.start()
                 travessia_para_esquerda.join()
 
         # Travessia para a direita        
         else:
             if ponte.total_atravessou_para('direita') < (N_CAMINHOES+N_CARROS)/2:
-                print('Direita {}'.format(ponte.total_atravessou_para('direita')))
                 travessia_para_direita = Thread(target=atravessa, kwargs={'fila': qe,
                                                               'tempo_uso_da_ponte': tempo_uso_da_ponte,
                                                               'tempos_de_espera': tempos_de_espera,
@@ -228,7 +218,6 @@ def main(**kwargs):
                                                               'ponte_sync': ponte_sync,
                                                               'ponte': ponte,
                                                               'caminhao_aux': caminhao_aux_na_esquerda})
-                print('Direita {}'.format(caminhao_aux_na_esquerda.caminhao))
 
                 travessia_para_direita.start()
                 travessia_para_direita.join()
